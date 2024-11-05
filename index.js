@@ -3,33 +3,35 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 const cors = require('cors');
 
 const app = express();
-const targetUrl = 'http://api.backpack.exchange'; // Actual API URL
+const targetUrl = 'https://api.backpack.exchange'; // Target API
 const allowedOrigin = 'http://localhost:3000'; // Frontend origin
 
-// Enable CORS with more relaxed settings (you can adjust as needed)
-
+// Enable CORS with more relaxed settings
 app.use(cors({
-    origin: 'http://localhost:3000', // Make sure the frontend origin is allowed
+    origin: allowedOrigin,
     credentials: true,
-    methods: ['GET', 'POST', 'OPTIONS'], // Allow methods
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Referer', 'Origin'], // Allow necessary headers
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Referer', 'Origin'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    preflightContinue: false,
+    optionsSuccessStatus: 200,
 }));
-
 
 // Handle OPTIONS preflight requests
 app.options('*', (req, res) => {
     res.sendStatus(200);
 });
 
-// Proxy setup
+// Proxy setup with path rewrite
 app.use('/api', createProxyMiddleware({
     target: targetUrl,
-    changeOrigin: true, // Modify the Origin header to match the target API
-    secure: false, // Disable SSL verification (use for local dev)
+    changeOrigin: true,
+    secure: false, // Disable SSL verification for local dev
+    pathRewrite: {
+        '^/api': '', // Remove the "/api" prefix when forwarding to the target
+    },
     onProxyReq: (proxyReq, req, res) => {
         console.log(`Proxying request to: ${targetUrl}${req.url}`);
-
-        // Optional: Set custom headers if necessary
+        // Optional: Set custom headers if needed
         proxyReq.setHeader('sec-fetch-site', 'same-site');
         proxyReq.setHeader('sec-fetch-mode', 'cors');
         proxyReq.setHeader('sec-fetch-dest', 'empty');
@@ -39,14 +41,12 @@ app.use('/api', createProxyMiddleware({
     },
     onProxyRes: (proxyRes, req, res) => {
         console.log(`Response received with status: ${proxyRes.statusCode}`);
+    },
+    onError: (err, req, res) => {
+        console.error('Error in proxy:', err);
+        res.status(500).send('Proxy error');
     }
 }));
-
-// Error handling
-app.use((err, req, res, next) => {
-    console.error('Error in proxy:', err);
-    res.status(500).send('Proxy error');
-});
 
 // Start the server
 const port = 3000;
