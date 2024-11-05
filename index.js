@@ -14,7 +14,7 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     preflightContinue: false, // Let the proxy handle OPTIONS requests
     optionsSuccessStatus: 200, // Response status for OPTIONS
-})); z
+}));
 
 // Handle OPTIONS preflight requests
 app.options('*', (req, res) => {
