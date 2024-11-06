@@ -10,8 +10,7 @@ const allowedOrigin = process.env.ALLOWED_ORIGIN// Frontend origin
 
 // Enable CORS with more relaxed settings (you can adjust as needed)
 app.use(cors({
-    origin: allowedOrigin, // Allow requests from your frontend only
-    credentials: true, // Enable credentials if necessary
+    origin: allowedOrigin,// Enable credentials if necessary
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Referer', 'Origin'], // Allow additional headers
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     preflightContinue: false, // Let the proxy handle OPTIONS requests
