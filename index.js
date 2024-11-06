@@ -30,14 +30,6 @@ app.use('/api', createProxyMiddleware({
     secure: true, // Disable SSL verification (use for local dev)
     onProxyReq: (proxyReq, req, res) => {
         console.log(`Proxying request to: ${targetUrl}${req.url}`);
-
-        // Optional: Set custom headers if necessary
-        proxyReq.setHeader('sec-fetch-site', 'same-site');
-        proxyReq.setHeader('sec-fetch-mode', 'cors');
-        proxyReq.setHeader('sec-fetch-dest', 'empty');
-        proxyReq.setHeader('sec-ch-ua', '"Chromium";v="130", "Google Chrome";v="130", "Not?A_Brand";v="99"');
-        proxyReq.setHeader('sec-ch-ua-mobile', '?0');
-        proxyReq.setHeader('sec-ch-ua-platform', '"Windows"');
     },
     onProxyRes: (proxyRes, req, res) => {
         console.log(`Response received with status: ${proxyRes.statusCode}`);
