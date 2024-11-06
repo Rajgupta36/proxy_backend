@@ -1,10 +1,12 @@
+require('dotenv').config();
 const express = require('express');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const cors = require('cors');
 
 const app = express();
 const targetUrl = 'https://api.backpack.exchange'; // Actual API URL
-const allowedOrigin = 'http://localhost:3000'; // Frontend origin
+const allowedOrigin = process.env.ALLOWED_ORIGIN// Frontend origin
+
 
 // Enable CORS with more relaxed settings (you can adjust as needed)
 app.use(cors({
@@ -51,5 +53,5 @@ app.use((err, req, res, next) => {
 // Start the server
 const port = 3000;
 app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+    console.log(`Server is running on port ${port} + ${process.env.ALLOWED_ORIGIN}`);
 });
