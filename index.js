@@ -27,7 +27,7 @@ app.options('*', (req, res) => {
 app.use('/api', createProxyMiddleware({
     target: targetUrl,
     changeOrigin: true, // Modify the Origin header to match the target API
-    secure: false, // Disable SSL verification (use for local dev)
+    secure: true, // Disable SSL verification (use for local dev)
     onProxyReq: (proxyReq, req, res) => {
         console.log(`Proxying request to: ${targetUrl}${req.url}`);
 
