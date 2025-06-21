@@ -4,45 +4,43 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 const cors = require('cors');
 
 const app = express();
-const targetUrl = 'https://api.backpack.exchange'; // Actual API URL
-const allowedOrigin = process.env.ALLOWED_ORIGIN// Frontend origin
+const targetUrl = 'https://api.backpack.exchange'; // Your target API
 
-
-// Enable CORS with more relaxed settings (you can adjust as needed)
+// Allow ALL origins (wide-open CORS)
 app.use(cors({
-    origin: allowedOrigin,// Enable credentials if necessary
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Referer', 'Origin'], // Allow additional headers
+    origin: '*', // Allows any domain
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    preflightContinue: false, // Let the proxy handle OPTIONS requests
-    optionsSuccessStatus: 200, // Response status for OPTIONS
+    allowedHeaders: ['*'], // Allows all headers
 }));
 
-// Handle OPTIONS preflight requests
-app.options('*', (req, res) => {
-    res.sendStatus(200);
-});
-
-// Proxy setup
+// Proxy middleware
 app.use('/api', createProxyMiddleware({
     target: targetUrl,
-    changeOrigin: true, // Modify the Origin header to match the target API
-    secure: true, // Disable SSL verification (use for local dev)
+    changeOrigin: true, // Changes the 'Host' header to target URL
+    secure: false, // Disable SSL verification (enable in production)
+    pathRewrite: { '^/api': '' }, // Removes '/api' from the path
+    logLevel: 'debug', // Helps in debugging
     onProxyReq: (proxyReq, req, res) => {
-        console.log(`Proxying request to: ${targetUrl}${req.url}`);
+        console.log(`Proxying: ${req.method} ${req.url}`);
     },
     onProxyRes: (proxyRes, req, res) => {
-        console.log(`Response received with status: ${proxyRes.statusCode}`);
+        // Force-set CORS headers (optional, since cors() already handles it)
+        proxyRes.headers['Access-Control-Allow-Origin'] = '*';
+        proxyRes.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS';
     }
 }));
 
+// Handle OPTIONS preflight (already handled by cors(), but explicit for safety)
+app.options('*', cors());
+
 // Error handling
 app.use((err, req, res, next) => {
-    console.error('Error in proxy:', err);
-    res.status(500).send('Proxy error');
+    console.error('Proxy Error:', err);
+    res.status(500).json({ error: 'Proxy server error' });
 });
 
-// Start the server
-const port = 3000;
+// Start server
+const port = process.env.PORT || 3000;
 app.listen(port, () => {
-    console.log(`Server is running on port ${port} + ${process.env.ALLOWED_ORIGIN}`);
+    console.log(`Proxy server running on http://localhost:${port}`);
 });
